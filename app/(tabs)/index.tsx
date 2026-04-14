@@ -6,18 +6,19 @@ import ListHeading from "@/components/shared/ListHeading";
 import {
   HOME_BALANCE,
   HOME_SUBSCRIPTIONS,
-  HOME_USER,
   UPCOMING_SUBSCRIPTIONS,
 } from "@/constants/data";
 import { icons } from "@/constants/icons";
 import "@/global.css";
 import { currencyFormat } from "@/lib/utils";
+import { useUser } from "@clerk/expo";
 import { format } from "date-fns";
 import { useState } from "react";
 import { FlatList, Image, Text, View } from "react-native";
 
 export default function Home() {
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const { user } = useUser();
 
   return (
     <SafeAreaView className="flex-1 bg-background p-4">
@@ -27,8 +28,11 @@ export default function Home() {
             <View>
               <View className="home-header">
                 <View className="home-user">
-                  <Avatar />
-                  <Text className="home-user-name">{HOME_USER.name}</Text>
+                  <Avatar
+                    avatar={user?.imageUrl}
+                    username={user?.firstName || ""}
+                  />
+                  <Text className="home-user-name">{user?.fullName}</Text>
                 </View>
                 <View className="home-add-icon">
                   <Image source={icons.add} className="size-8" />
