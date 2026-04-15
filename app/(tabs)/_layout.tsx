@@ -1,12 +1,20 @@
 import TabBarIcon from "@/components/layout/TabBarIcon";
 import { tabs } from "@/constants/data";
 import { colors, components } from "@/constants/theme";
-import { Tabs } from "expo-router";
+import { useAuth } from "@clerk/expo";
+import { Redirect, Tabs } from "expo-router";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const RootTabsLayout = () => {
+  const { isSignedIn, isLoaded } = useAuth();
   const insets = useSafeAreaInsets();
+
+  if (!isLoaded) return null;
+
+  if (!isSignedIn) {
+    return <Redirect href="/(_auth)/signin" />;
+  }
 
   return (
     <Tabs
