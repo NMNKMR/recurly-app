@@ -27,7 +27,13 @@ const MyPasswordInput = ({
           onChangeText={setPassword}
           secureTextEntry={!view}
         />
-        <Pressable onPress={() => setView(!view)} hitSlop={8}>
+        <Pressable
+          onPress={() => setView(!view)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={view ? "Hide password" : "Show password"}
+          accessibilityHint="Toggles password visibility"
+        >
           <Ionicons
             name={view ? "eye-off-outline" : "eye-outline"}
             size={20}

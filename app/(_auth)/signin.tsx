@@ -21,6 +21,7 @@ export default function SignIn() {
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [localErrors, setLocalErrors] = useState<{ email?: string; password?: string }>({});
+  const [generalError, setGeneralError] = useState("");
 
   const isLoading = fetchStatus === "fetching";
 
@@ -35,20 +36,25 @@ export default function SignIn() {
 
   const handleSubmit = async () => {
     if (!validate()) return;
-    const { error } = await signIn.password({
-      emailAddress,
-      password,
-    });
-    if (error) return;
-
-    if (signIn.status === "complete") {
-      await signIn.finalize({
-        navigate: ({ session, decorateUrl }) => {
-          if (session?.currentTask) return;
-          const url = decorateUrl("/(tabs)");
-          router.replace(url as Href);
-        },
+    setGeneralError("");
+    try {
+      const { error } = await signIn.password({
+        emailAddress,
+        password,
       });
+      if (error) return;
+
+      if (signIn.status === "complete") {
+        await signIn.finalize({
+          navigate: ({ session, decorateUrl }) => {
+            if (session?.currentTask) return;
+            const url = decorateUrl("/(tabs)");
+            router.replace(url as Href);
+          },
+        });
+      }
+    } catch (err: any) {
+      setGeneralError(err?.message || "Something went wrong. Please try again.");
     }
   };
 
@@ -104,6 +110,10 @@ export default function SignIn() {
                   setPassword={setPassword}
                   error={localErrors.password || errors?.fields?.password?.message || ""}
                 />
+
+                {generalError ? (
+                  <Text className="auth-error">{generalError}</Text>
+                ) : null}
 
                 <TouchableOpacity
                   className={`auth-button ${isLoading || !emailAddress || !password ? "auth-button-disabled" : ""}`}

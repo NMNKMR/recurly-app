@@ -29,9 +29,12 @@ export default function SignUp() {
   const [code, setCode] = useState("");
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [localErrors, setLocalErrors] = useState<{
+    firstName?: string;
+    lastName?: string;
     email?: string;
     password?: string;
   }>({});
+  const [generalError, setGeneralError] = useState("");
 
   const isLoading = fetchStatus === "fetching";
 
@@ -65,6 +68,8 @@ export default function SignUp() {
 
   const validate = () => {
     const errs: typeof localErrors = {};
+    if (!firstName.trim()) errs.firstName = "First name is required";
+    if (!lastName.trim()) errs.lastName = "Last name is required";
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailAddress))
       errs.email = "Enter a valid email address";
@@ -75,37 +80,42 @@ export default function SignUp() {
   };
 
   const handleSubmit = async () => {
-    const fName = firstName.trim();
-    const lName = lastName.trim();
-
-    if (!fName || !lName) return;
     if (!validate()) return;
+    setGeneralError("");
+    try {
+      const { error } = await signUp.password({
+        emailAddress,
+        password,
+        firstName,
+        lastName,
+      });
+      if (error) return;
 
-    const { error } = await signUp.password({
-      emailAddress,
-      password,
-      firstName,
-      lastName,
-    });
-    if (error) return;
-
-    await signUp.verifications.sendEmailCode();
+      await signUp.verifications.sendEmailCode();
+    } catch (err: any) {
+      setGeneralError(err?.message || "Something went wrong. Please try again.");
+    }
   };
 
   const handleVerify = async () => {
-    await signUp.verifications.verifyEmailCode({ code });
+    setGeneralError("");
+    try {
+      await signUp.verifications.verifyEmailCode({ code });
 
-    if (signUp.status === "complete") {
-      if (avatarUri) {
-        pendingAvatarUpload.current = true;
+      if (signUp.status === "complete") {
+        if (avatarUri) {
+          pendingAvatarUpload.current = true;
+        }
+        await signUp.finalize({
+          navigate: ({ session, decorateUrl }) => {
+            if (session?.currentTask) return;
+            const url = decorateUrl("/(tabs)");
+            router.replace(url as Href);
+          },
+        });
       }
-      await signUp.finalize({
-        navigate: ({ session, decorateUrl }) => {
-          if (session?.currentTask) return;
-          const url = decorateUrl("/(tabs)");
-          router.replace(url as Href);
-        },
-      });
+    } catch (err: any) {
+      setGeneralError(err?.message || "Something went wrong. Please try again.");
     }
   };
 
@@ -166,6 +176,10 @@ export default function SignUp() {
                       </Text>
                     )}
                   </View>
+
+                  {generalError ? (
+                    <Text className="auth-error">{generalError}</Text>
+                  ) : null}
 
                   <TouchableOpacity
                     className={`auth-button ${isLoading ? "auth-button-disabled" : ""}`}
@@ -261,6 +275,11 @@ export default function SignUp() {
                       value={firstName}
                       onChangeText={setFirstName}
                     />
+                    {(localErrors.firstName || errors?.fields?.firstName) && (
+                      <Text className="auth-error">
+                        {localErrors.firstName || errors?.fields?.firstName?.message}
+                      </Text>
+                    )}
                   </View>
                   <View className="auth-field grow">
                     <Text className="auth-label">Last name</Text>
@@ -271,6 +290,11 @@ export default function SignUp() {
                       value={lastName}
                       onChangeText={setLastName}
                     />
+                    {(localErrors.lastName || errors?.fields?.lastName) && (
+                      <Text className="auth-error">
+                        {localErrors.lastName || errors?.fields?.lastName?.message}
+                      </Text>
+                    )}
                   </View>
                 </View>
 
@@ -302,6 +326,10 @@ export default function SignUp() {
                     ""
                   }
                 />
+
+                {generalError ? (
+                  <Text className="auth-error">{generalError}</Text>
+                ) : null}
 
                 <TouchableOpacity
                   className={`auth-button ${isLoading || !emailAddress || !password || !firstName.trim() || !lastName ? "auth-button-disabled" : ""}`}
