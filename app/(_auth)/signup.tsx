@@ -1,7 +1,9 @@
 import MyPasswordInput from "@/components/core/MyPasswordInput";
 import SafeAreaView from "@/components/core/StyledSafeAreaView";
 import Logo from "@/components/shared/Logo";
+import { colors } from "@/constants/theme";
 import { useAuth, useSignUp, useUser } from "@clerk/expo";
+import { clsx } from "clsx";
 import * as ImagePicker from "expo-image-picker";
 import { type Href, Link, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -93,7 +95,9 @@ export default function SignUp() {
 
       await signUp.verifications.sendEmailCode();
     } catch (err: any) {
-      setGeneralError(err?.message || "Something went wrong. Please try again.");
+      setGeneralError(
+        err?.message || "Something went wrong. Please try again.",
+      );
     }
   };
 
@@ -115,7 +119,9 @@ export default function SignUp() {
         });
       }
     } catch (err: any) {
-      setGeneralError(err?.message || "Something went wrong. Please try again.");
+      setGeneralError(
+        err?.message || "Something went wrong. Please try again.",
+      );
     }
   };
 
@@ -182,13 +188,16 @@ export default function SignUp() {
                   ) : null}
 
                   <TouchableOpacity
-                    className={`auth-button ${isLoading ? "auth-button-disabled" : ""}`}
+                    className={clsx(
+                      "auth-button",
+                      isLoading && "auth-button-disabled",
+                    )}
                     onPress={handleVerify}
                     disabled={isLoading}
                     activeOpacity={0.8}
                   >
                     {isLoading ? (
-                      <ActivityIndicator color="#081126" />
+                      <ActivityIndicator color={colors.foreground} />
                     ) : (
                       <Text className="auth-button-text">Verify email</Text>
                     )}
@@ -219,6 +228,13 @@ export default function SignUp() {
   }
 
   // Registration step
+  const isSubmitDisabled =
+    isLoading ||
+    !emailAddress ||
+    !password ||
+    !firstName.trim() ||
+    !lastName.trim();
+
   return (
     <SafeAreaView className="auth-safe-area">
       <KeyboardAvoidingView className="auth-screen" behavior="padding">
@@ -277,7 +293,8 @@ export default function SignUp() {
                     />
                     {(localErrors.firstName || errors?.fields?.firstName) && (
                       <Text className="auth-error">
-                        {localErrors.firstName || errors?.fields?.firstName?.message}
+                        {localErrors.firstName ||
+                          errors?.fields?.firstName?.message}
                       </Text>
                     )}
                   </View>
@@ -292,7 +309,8 @@ export default function SignUp() {
                     />
                     {(localErrors.lastName || errors?.fields?.lastName) && (
                       <Text className="auth-error">
-                        {localErrors.lastName || errors?.fields?.lastName?.message}
+                        {localErrors.lastName ||
+                          errors?.fields?.lastName?.message}
                       </Text>
                     )}
                   </View>
@@ -332,19 +350,16 @@ export default function SignUp() {
                 ) : null}
 
                 <TouchableOpacity
-                  className={`auth-button ${isLoading || !emailAddress || !password || !firstName.trim() || !lastName ? "auth-button-disabled" : ""}`}
+                  className={clsx(
+                    "auth-button",
+                    isSubmitDisabled && "auth-button-disabled",
+                  )}
                   onPress={handleSubmit}
-                  disabled={
-                    isLoading ||
-                    !emailAddress ||
-                    !password ||
-                    !firstName.trim() ||
-                    !lastName.trim()
-                  }
+                  disabled={isSubmitDisabled}
                   activeOpacity={0.8}
                 >
                   {isLoading ? (
-                    <ActivityIndicator color="#081126" />
+                    <ActivityIndicator color={colors.foreground} />
                   ) : (
                     <Text className="auth-button-text">Create account</Text>
                   )}
