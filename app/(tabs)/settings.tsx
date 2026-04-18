@@ -25,6 +25,7 @@ const Settings = () => {
     user?.imageUrl || null,
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
   useEffect(() => {
@@ -61,7 +62,7 @@ const Settings = () => {
   };
 
   const handleUpdateAvatar = async () => {
-    if (!user) return;
+    if (!user || isUpdatingAvatar) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
@@ -72,7 +73,7 @@ const Settings = () => {
 
     if (!result.canceled && result.assets[0]?.base64) {
       try {
-        setIsLoading(true);
+        setIsUpdatingAvatar(true);
         await user.setProfileImage({
           file: "data:image/jpeg;base64," + result.assets[0].base64,
         });
@@ -82,12 +83,13 @@ const Settings = () => {
         setAvatarUri(user?.imageUrl || null);
         alert("Something went wrong. Please try again.");
       } finally {
-        setIsLoading(false);
+        setIsUpdatingAvatar(false);
       }
     }
   };
 
-  const isSubmitDisabled = isLoading || !firstName.trim() || !lastName.trim();
+  const isSubmitDisabled =
+    isLoading || isUpdatingAvatar || !firstName.trim() || !lastName.trim();
 
   return (
     <SafeAreaView className="flex-1 bg-background p-4">
@@ -105,11 +107,16 @@ const Settings = () => {
               <Pressable
                 hitSlop={8}
                 onPress={handleUpdateAvatar}
+                disabled={isUpdatingAvatar || isLoading}
                 accessibilityRole="button"
                 accessibilityLabel="Update Avatar"
                 className="absolute shadow bottom-0 right-0 rounded-full size-8 items-center justify-center bg-accent p-2"
               >
-                <Ionicons name="camera-outline" size={14} color="white" />
+                {isUpdatingAvatar ? (
+                  <ActivityIndicator size={14} color="white" />
+                ) : (
+                  <Ionicons name="camera-outline" size={14} color="white" />
+                )}
               </Pressable>
             </View>
             <View className="gap-1 items-center">
