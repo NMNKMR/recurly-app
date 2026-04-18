@@ -1,7 +1,9 @@
 import MyPasswordInput from "@/components/core/MyPasswordInput";
 import SafeAreaView from "@/components/core/StyledSafeAreaView";
 import Logo from "@/components/shared/Logo";
+import { colors } from "@/constants/theme";
 import { useSignIn } from "@clerk/expo";
+import { clsx } from "clsx";
 import { type Href, Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -20,7 +22,10 @@ export default function SignIn() {
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
-  const [localErrors, setLocalErrors] = useState<{ email?: string; password?: string }>({});
+  const [localErrors, setLocalErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
   const [generalError, setGeneralError] = useState("");
 
   const isLoading = fetchStatus === "fetching";
@@ -28,8 +33,10 @@ export default function SignIn() {
   const validate = () => {
     const errs: typeof localErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailAddress)) errs.email = "Enter a valid email address";
-    if (password.length < 8) errs.password = "Password must be at least 8 characters";
+    if (!emailRegex.test(emailAddress))
+      errs.email = "Enter a valid email address";
+    if (password.length < 8)
+      errs.password = "Password must be at least 8 characters";
     setLocalErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -54,7 +61,9 @@ export default function SignIn() {
         });
       }
     } catch (err: any) {
-      setGeneralError(err?.message || "Something went wrong. Please try again.");
+      setGeneralError(
+        err?.message || "Something went wrong. Please try again.",
+      );
     }
   };
 
@@ -108,7 +117,11 @@ export default function SignIn() {
                 <MyPasswordInput
                   password={password}
                   setPassword={setPassword}
-                  error={localErrors.password || errors?.fields?.password?.message || ""}
+                  error={
+                    localErrors.password ||
+                    errors?.fields?.password?.message ||
+                    ""
+                  }
                 />
 
                 {generalError ? (
@@ -116,13 +129,18 @@ export default function SignIn() {
                 ) : null}
 
                 <TouchableOpacity
-                  className={`auth-button ${isLoading || !emailAddress || !password ? "auth-button-disabled" : ""}`}
+                  className={clsx(
+                    "auth-button",
+                    isLoading || !emailAddress || !password
+                      ? "auth-button-disabled"
+                      : "",
+                  )}
                   onPress={handleSubmit}
                   disabled={isLoading || !emailAddress || !password}
                   activeOpacity={0.8}
                 >
                   {isLoading ? (
-                    <ActivityIndicator color="#081126" />
+                    <ActivityIndicator color={colors.foreground} />
                   ) : (
                     <Text className="auth-button-text">Sign in</Text>
                   )}
