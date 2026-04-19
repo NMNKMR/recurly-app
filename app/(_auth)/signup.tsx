@@ -1,12 +1,13 @@
 import MyPasswordInput from "@/components/core/MyPasswordInput";
+import OtpInput from "@/components/core/OtpInput";
 import SafeAreaView from "@/components/core/StyledSafeAreaView";
 import Logo from "@/components/shared/Logo";
 import { colors } from "@/constants/theme";
-import { useAuth, useSignUp, useUser } from "@clerk/expo";
+import { useAuth, useClerk, useSignUp } from "@clerk/expo";
 import { clsx } from "clsx";
 import * as ImagePicker from "expo-image-picker";
 import { type Href, Link, useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -21,15 +22,17 @@ import {
 export default function SignUp() {
   const { signUp, errors, fetchStatus } = useSignUp();
   const { isSignedIn } = useAuth();
-  const { user } = useUser();
+  const clerk = useClerk();
   const router = useRouter();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const avatarUploadRef = useRef<{ base64: string; mimeType: string } | null>(
+    null,
+  );
   const [localErrors, setLocalErrors] = useState<{
     firstName?: string;
     lastName?: string;
@@ -40,31 +43,22 @@ export default function SignUp() {
 
   const isLoading = fetchStatus === "fetching";
 
-  // Upload avatar once user becomes available after sign-up
-  const pendingAvatarUpload = useRef(false);
-  useEffect(() => {
-    if (user && pendingAvatarUpload.current && avatarUri) {
-      (async () => {
-        try {
-          const response = await fetch(avatarUri);
-          const blob = await response.blob();
-          await user.setProfileImage({ file: blob });
-        } catch {}
-        pendingAvatarUpload.current = false;
-      })();
-    }
-  }, [user, avatarUri]);
-
   const pickAvatar = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
+      base64: true,
     });
 
     if (!result.canceled && result.assets[0]) {
-      setAvatarUri(result.assets[0].uri);
+      const asset = result.assets[0];
+      setAvatarUri(asset.uri);
+      avatarUploadRef.current =
+        asset.base64 && asset.mimeType
+          ? { base64: asset.base64, mimeType: asset.mimeType }
+          : null;
     }
   };
 
@@ -101,22 +95,42 @@ export default function SignUp() {
     }
   };
 
-  const handleVerify = async () => {
+  const handleVerify = async (otpCode: string) => {
     setGeneralError("");
     try {
-      await signUp.verifications.verifyEmailCode({ code });
+      await signUp.verifications.verifyEmailCode({ code: otpCode });
 
       if (signUp.status === "complete") {
-        if (avatarUri) {
-          pendingAvatarUpload.current = true;
-        }
+        let redirectUrl: Href | null = null;
+        let hasCurrentTask = false;
+
         await signUp.finalize({
           navigate: ({ session, decorateUrl }) => {
-            if (session?.currentTask) return;
-            const url = decorateUrl("/(tabs)");
-            router.replace(url as Href);
+            if (session?.currentTask) {
+              hasCurrentTask = true;
+              return;
+            }
+            redirectUrl = decorateUrl("/(tabs)") as Href;
           },
         });
+
+        if (hasCurrentTask || !redirectUrl) return;
+
+        // Upload avatar before navigating — clerk.user is available after finalize
+        if (avatarUploadRef.current && clerk.user) {
+          try {
+            await clerk.user.setProfileImage({
+              file:
+                `data:${
+                  avatarUploadRef.current.mimeType || "image/jpeg"
+                };base64,` + avatarUploadRef.current,
+            });
+          } catch (err) {
+            console.warn("Avatar upload failed:", err);
+          }
+        }
+
+        router.replace(redirectUrl);
       }
     } catch (err: any) {
       setGeneralError(
@@ -166,42 +180,15 @@ export default function SignUp() {
 
               <View className="auth-card">
                 <View className="auth-form">
-                  <View className="auth-field">
-                    <Text className="auth-label">Verification code</Text>
-                    <TextInput
-                      className="auth-input"
-                      placeholder="Enter 6-digit code"
-                      placeholderTextColor="rgba(0,0,0,0.35)"
-                      value={code}
-                      onChangeText={setCode}
-                      keyboardType="number-pad"
-                    />
-                    {errors?.fields?.code && (
-                      <Text className="auth-error">
-                        {errors.fields.code.message}
-                      </Text>
-                    )}
-                  </View>
-
-                  {generalError ? (
-                    <Text className="auth-error">{generalError}</Text>
-                  ) : null}
-
-                  <TouchableOpacity
-                    className={clsx(
-                      "auth-button",
-                      isLoading && "auth-button-disabled",
-                    )}
-                    onPress={handleVerify}
+                  <OtpInput
+                    onComplete={handleVerify}
+                    error={generalError || errors?.fields?.code?.message || ""}
                     disabled={isLoading}
-                    activeOpacity={0.8}
-                  >
-                    {isLoading ? (
-                      <ActivityIndicator color={colors.foreground} />
-                    ) : (
-                      <Text className="auth-button-text">Verify email</Text>
-                    )}
-                  </TouchableOpacity>
+                  />
+
+                  {isLoading ? (
+                    <ActivityIndicator color={colors.foreground} />
+                  ) : null}
 
                   <View className="auth-divider-row">
                     <View className="auth-divider-line" />
@@ -282,7 +269,7 @@ export default function SignUp() {
                 </TouchableOpacity>
 
                 <View className="flex-row gap-3">
-                  <View className="auth-field grow">
+                  <View className="auth-field flex-1">
                     <Text className="auth-label">First name</Text>
                     <TextInput
                       className="auth-input"
@@ -298,7 +285,7 @@ export default function SignUp() {
                       </Text>
                     )}
                   </View>
-                  <View className="auth-field grow">
+                  <View className="auth-field flex-1">
                     <Text className="auth-label">Last name</Text>
                     <TextInput
                       className="auth-input"
