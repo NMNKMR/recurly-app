@@ -75,7 +75,9 @@ const Settings = () => {
       try {
         setIsUpdatingAvatar(true);
         await user.setProfileImage({
-          file: "data:image/jpeg;base64," + result.assets[0].base64,
+          file:
+            `data:${result.assets[0].mimeType || "image/jpeg"};base64,` +
+            result.assets[0].base64,
         });
         setAvatarUri(result.assets[0].uri);
       } catch (err) {

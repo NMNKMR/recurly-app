@@ -30,7 +30,9 @@ export default function SignUp() {
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
-  const avatarBase64Ref = useRef<string | null>(null);
+  const avatarUploadRef = useRef<{ base64: string; mimeType: string } | null>(
+    null,
+  );
   const [localErrors, setLocalErrors] = useState<{
     firstName?: string;
     lastName?: string;
@@ -51,8 +53,12 @@ export default function SignUp() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      setAvatarUri(result.assets[0].uri);
-      avatarBase64Ref.current = result.assets[0].base64 || null;
+      const asset = result.assets[0];
+      setAvatarUri(asset.uri);
+      avatarUploadRef.current =
+        asset.base64 && asset.mimeType
+          ? { base64: asset.base64, mimeType: asset.mimeType }
+          : null;
     }
   };
 
@@ -95,26 +101,36 @@ export default function SignUp() {
       await signUp.verifications.verifyEmailCode({ code: otpCode });
 
       if (signUp.status === "complete") {
-        let redirectUrl = "/(tabs)";
+        let redirectUrl: Href | null = null;
+        let hasCurrentTask = false;
+
         await signUp.finalize({
           navigate: ({ session, decorateUrl }) => {
-            if (session?.currentTask) return;
-            redirectUrl = decorateUrl("/(tabs)");
+            if (session?.currentTask) {
+              hasCurrentTask = true;
+              return;
+            }
+            redirectUrl = decorateUrl("/(tabs)") as Href;
           },
         });
 
+        if (hasCurrentTask || !redirectUrl) return;
+
         // Upload avatar before navigating — clerk.user is available after finalize
-        if (avatarBase64Ref.current && clerk.user) {
+        if (avatarUploadRef.current && clerk.user) {
           try {
             await clerk.user.setProfileImage({
-              file: "data:image/jpeg;base64," + avatarBase64Ref.current,
+              file:
+                `data:${
+                  avatarUploadRef.current.mimeType || "image/jpeg"
+                };base64,` + avatarUploadRef.current,
             });
           } catch (err) {
             console.warn("Avatar upload failed:", err);
           }
         }
 
-        router.replace(redirectUrl as Href);
+        router.replace(redirectUrl);
       }
     } catch (err: any) {
       setGeneralError(
