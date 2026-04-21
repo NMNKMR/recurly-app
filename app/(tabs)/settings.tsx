@@ -94,7 +94,7 @@ const Settings = () => {
     isLoading || isUpdatingAvatar || !firstName.trim() || !lastName.trim();
 
   return (
-    <SafeAreaView className="flex-1 bg-background p-4">
+    <SafeAreaView className="safe-view">
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerClassName="pb-24 flex-1"

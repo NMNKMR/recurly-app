@@ -427,4 +427,8 @@
     .category-chip-text-active {
         @apply text-accent;
     }
+
+    .safe-view {
+        @apply flex-1 bg-background p-4;
+    }
 }
