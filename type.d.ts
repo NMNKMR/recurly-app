@@ -1,3 +1,4 @@
+import { LinkProps } from "expo-router";
 import type { ImageSourcePropType } from "react-native";
 
 declare global {
@@ -51,6 +52,7 @@ declare global {
 
   interface ListHeadingProps {
     title: string;
+    link?: LinkProps["href"];
   }
 }
 

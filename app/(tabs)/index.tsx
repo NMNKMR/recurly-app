@@ -21,7 +21,7 @@ export default function Home() {
   const { user } = useUser();
 
   return (
-    <SafeAreaView className="flex-1 bg-background p-4">
+    <SafeAreaView className="safe-view">
       <View className="flex-1">
         <FlatList
           ListHeaderComponent={
@@ -64,7 +64,7 @@ export default function Home() {
                   )}
                 />
               </View>
-              <ListHeading title="All Subscriptions" />
+              <ListHeading title="All Subscriptions" link="/subscriptions" />
             </View>
           }
           data={HOME_SUBSCRIPTIONS}
