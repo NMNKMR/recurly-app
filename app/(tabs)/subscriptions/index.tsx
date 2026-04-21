@@ -16,9 +16,10 @@ const Subscriptions = () => {
   );
 
   const data = useMemo(() => {
-    if (!debouncedSearch) return ALL_SUBSCRIPTIONS;
+    const query = debouncedSearch.trim().toLowerCase();
+    if (!query) return ALL_SUBSCRIPTIONS;
     return ALL_SUBSCRIPTIONS.filter((sub) =>
-      sub.name.toLowerCase().includes(debouncedSearch.toLowerCase()),
+      sub.name.toLowerCase().includes(query),
     );
   }, [debouncedSearch]);
 
@@ -62,6 +63,7 @@ const Subscriptions = () => {
         ItemSeparatorComponent={() => <View className="h-4" />}
         contentContainerClassName="pb-20"
         keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
       />
     </SafeAreaView>
   );
