@@ -101,9 +101,15 @@ const SubscriptionForm = ({ mode, handleSave }: SubscriptionFormProps) => {
       form.accentColor,
     ];
     const isValid = requiredFields.every((field) => field.trim() !== "");
+    const isPriceValid = parseFloat(form.price.replace(/[^0-9.]/g, "")) > 0;
 
     if (!isValid) {
       Alert.alert("Error", "All fields are required.");
+      return;
+    }
+
+    if (!isPriceValid) {
+      Alert.alert("Error", "Price must be greater than 0.");
       return;
     }
 
@@ -386,7 +392,6 @@ const SubscriptionForm = ({ mode, handleSave }: SubscriptionFormProps) => {
                     style={{ backgroundColor: color }}
                     onPress={() => handleFormChange("accentColor", color)}
                     accessibilityRole="button"
-                    accessibilityLabel={color}
                     hitSlop={10}
                     className="size-9 rounded-full justify-center items-center"
                   >

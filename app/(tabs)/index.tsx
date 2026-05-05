@@ -39,6 +39,10 @@ export default function Home() {
                 <TouchableOpacity
                   onPress={() => router.push("/subscriptions/add")}
                   className="home-add-icon"
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel="Add subscription"
+                  accessibilityHint="Opens the add subscription form"
                 >
                   <Image source={icons.add} className="size-8" />
                 </TouchableOpacity>
