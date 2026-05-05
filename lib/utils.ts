@@ -1,12 +1,14 @@
 import { format, isValid } from "date-fns";
 
-export const currencyFormat = (value: number) => {
+export const currencyFormat = (value: number, hideCurrency = false) => {
   try {
-    return new Intl.NumberFormat("en-IN", {
+    const formattedValue = new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0,
     }).format(value);
+
+    return hideCurrency ? formattedValue.slice(1) : formattedValue;
   } catch (error) {
     console.log(error);
     return `₹${value.toFixed(0)}`;
