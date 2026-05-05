@@ -54,7 +54,7 @@ const RootTabsLayout = () => {
           }}
         />
       ))}
-      <Tabs.Screen name="subscriptions/[id]" options={{ href: null }} />
+      {/* <Tabs.Screen name="subscriptions/[id]" options={{ href: null }} /> */}
     </Tabs>
   );
 };

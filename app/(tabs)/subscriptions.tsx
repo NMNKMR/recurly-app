@@ -2,6 +2,10 @@ import SubscriptionCard from "@/components/cards/SubscriptionCard";
 import SafeAreaView from "@/components/core/StyledSafeAreaView";
 import { ALL_SUBSCRIPTIONS } from "@/constants/data";
 import { useDebounce } from "@/hooks/useDebounce";
+import {
+  resolveSubscription,
+  useSubscriptionStore,
+} from "@/lib/stores/subscription";
 import React, { useMemo, useState } from "react";
 import { FlatList, Text, TextInput, View } from "react-native";
 
@@ -9,19 +13,22 @@ const Subscriptions = () => {
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const subscriptions = useSubscriptionStore((state) => state.subscriptions);
 
   const debouncedSearchFn = useDebounce(
     (value) => setDebouncedSearch(value),
     500,
   );
 
+  const subsData = useMemo(() => {
+    return [...subscriptions.map(resolveSubscription), ...ALL_SUBSCRIPTIONS];
+  }, [subscriptions]);
+
   const data = useMemo(() => {
     const query = debouncedSearch.trim().toLowerCase();
-    if (!query) return ALL_SUBSCRIPTIONS;
-    return ALL_SUBSCRIPTIONS.filter((sub) =>
-      sub.name.toLowerCase().includes(query),
-    );
-  }, [debouncedSearch]);
+    if (!query) return subsData;
+    return subsData.filter((sub) => sub.name.toLowerCase().includes(query));
+  }, [debouncedSearch, subsData]);
 
   return (
     <SafeAreaView className="safe-view">

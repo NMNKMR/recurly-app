@@ -13,12 +13,14 @@ import "@/global.css";
 import { currencyFormat } from "@/lib/utils";
 import { useUser } from "@clerk/expo";
 import { format } from "date-fns";
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import { FlatList, Image, Text, View } from "react-native";
+import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function Home() {
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const { user } = useUser();
+  const router = useRouter();
 
   return (
     <SafeAreaView className="safe-view">
@@ -34,9 +36,16 @@ export default function Home() {
                   />
                   <Text className="home-user-name">{user?.fullName}</Text>
                 </View>
-                <View className="home-add-icon">
+                <TouchableOpacity
+                  onPress={() => router.push("/subscriptions/add")}
+                  className="home-add-icon"
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel="Add subscription"
+                  accessibilityHint="Opens the add subscription form"
+                >
                   <Image source={icons.add} className="size-8" />
-                </View>
+                </TouchableOpacity>
               </View>
               <View className="home-balance-card">
                 <Text className="home-balance-label">Balance</Text>

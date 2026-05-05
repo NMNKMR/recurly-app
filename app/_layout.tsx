@@ -33,7 +33,14 @@ export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(_auth)" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="subscriptions/add"
+          options={{ presentation: "modal" }}
+        />
+      </Stack>
     </ClerkProvider>
   );
 }
