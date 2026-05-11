@@ -22,7 +22,7 @@ declare global {
     plan?: string;
     category?: string;
     paymentMethod?: string;
-    status?: Status;
+    status: Status;
     startDate?: string;
     price: number;
     currency?: string;

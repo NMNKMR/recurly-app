@@ -43,7 +43,7 @@ const SubscriptionCard = ({
             <Text className="sub-title" numberOfLines={1} ellipsizeMode="tail">
               {name}
             </Text>
-            <StatusBadge status={status || "expired"} />
+            <StatusBadge status={status} />
           </View>
         </View>
         <View className="sub-price-box">
