@@ -1,4 +1,6 @@
+import { ClassValue, clsx } from "clsx";
 import { format, isValid } from "date-fns";
+import { twMerge } from "tailwind-merge";
 
 export const currencyFormat = (value: number, hideCurrency = false) => {
   try {
@@ -23,3 +25,7 @@ export const formatSubDate = (dateString: string) => {
 
 export const formatSubStatus = (status: string) =>
   status.charAt(0).toUpperCase() + status.slice(1);
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}

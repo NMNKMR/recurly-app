@@ -10,7 +10,7 @@ export type StoredSubscription = {
   plan?: string;
   category?: string;
   paymentMethod?: string;
-  status: string;
+  status: Status;
   startDate: string;
   price: number;
   currency?: string;

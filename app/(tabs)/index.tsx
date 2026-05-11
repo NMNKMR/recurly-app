@@ -3,13 +3,11 @@ import SubscriptionCard from "@/components/cards/SubscriptionCard";
 import UpcomingSubCard from "@/components/cards/UpcomingSubCard";
 import SafeAreaView from "@/components/core/StyledSafeAreaView";
 import ListHeading from "@/components/shared/ListHeading";
-import {
-  HOME_BALANCE,
-  HOME_SUBSCRIPTIONS,
-  UPCOMING_SUBSCRIPTIONS,
-} from "@/constants/data";
+import { HOME_BALANCE } from "@/constants/data";
 import { icons } from "@/constants/icons";
 import "@/global.css";
+import { useGetUpcomingSubs } from "@/hooks/useGetUpcomingSubs";
+import { useGetTopSubs } from "@/hooks/usetGetTopSubs";
 import { currencyFormat } from "@/lib/utils";
 import { useUser } from "@clerk/expo";
 import { format } from "date-fns";
@@ -21,6 +19,8 @@ export default function Home() {
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const { user } = useUser();
   const router = useRouter();
+  const upcomingSubs = useGetUpcomingSubs();
+  const topSubs = useGetTopSubs();
 
   return (
     <SafeAreaView className="safe-view">
@@ -59,9 +59,9 @@ export default function Home() {
                 </View>
               </View>
               <View className="mb-2">
-                <ListHeading title="Upcoming" />
+                <ListHeading title="Upcoming" link="/insights" />
                 <FlatList
-                  data={UPCOMING_SUBSCRIPTIONS}
+                  data={upcomingSubs}
                   renderItem={({ item }) => <UpcomingSubCard {...item} />}
                   keyExtractor={(item) => item.id}
                   horizontal
@@ -73,10 +73,10 @@ export default function Home() {
                   )}
                 />
               </View>
-              <ListHeading title="All Subscriptions" link="/subscriptions" />
+              <ListHeading title="Top Subscriptions" link="/subscriptions" />
             </View>
           }
-          data={HOME_SUBSCRIPTIONS}
+          data={topSubs}
           renderItem={({ item }) => (
             <SubscriptionCard
               {...item}

@@ -13,6 +13,8 @@ declare global {
     icon: ImageSourcePropType;
   }
 
+  type Status = "active" | "paused" | "cancelled" | "expired";
+
   interface Subscription {
     id: string;
     icon: ImageSourcePropType;
@@ -20,7 +22,7 @@ declare global {
     plan?: string;
     category?: string;
     paymentMethod?: string;
-    status?: string;
+    status?: Status;
     startDate?: string;
     price: number;
     currency?: string;
