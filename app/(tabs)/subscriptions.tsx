@@ -1,6 +1,5 @@
 import SubscriptionCard from "@/components/cards/SubscriptionCard";
 import SafeAreaView from "@/components/core/StyledSafeAreaView";
-import { ALL_SUBSCRIPTIONS } from "@/constants/data";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
   resolveSubscription,
@@ -21,7 +20,7 @@ const Subscriptions = () => {
   );
 
   const subsData = useMemo(() => {
-    return [...subscriptions.map(resolveSubscription), ...ALL_SUBSCRIPTIONS];
+    return subscriptions.map(resolveSubscription);
   }, [subscriptions]);
 
   const data = useMemo(() => {

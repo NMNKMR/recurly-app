@@ -1,7 +1,8 @@
-import { currencyFormat, formatSubDate, formatSubStatus } from "@/lib/utils";
+import { currencyFormat, formatSubDate } from "@/lib/utils";
 import { clsx } from "clsx";
 import React from "react";
 import { Image, Pressable, Text, View } from "react-native";
+import StatusBadge from "../shared/StatusBadge";
 
 const SubscriptionCard = ({
   billing,
@@ -42,9 +43,7 @@ const SubscriptionCard = ({
             <Text className="sub-title" numberOfLines={1} ellipsizeMode="tail">
               {name}
             </Text>
-            <View className="sub-status">
-              <Text>{formatSubStatus(status || "expired")}</Text>
-            </View>
+            <StatusBadge status={status} />
           </View>
         </View>
         <View className="sub-price-box">
